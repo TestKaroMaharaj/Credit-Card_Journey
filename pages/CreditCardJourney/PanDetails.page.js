@@ -1,51 +1,43 @@
 const { expect } = require('@playwright/test');
+const { maximizeScreen, typeHuman, waitBetweenScreens } = require('../../utils/helpers');
 
 class PanDetails {
   constructor(page) {
     this.page = page;
     this.panInput = '#pan';
-    this.employmentDropdown = '#v-0-0-2';
-    this.incomeItr = '#netMonthlySalary';
-    this.submitBtn = this.page.getByRole('button', { name: 'Submit' });
+    this.employmentTypeDropdown = '#v-0-0-2';
+    this.incomeInput = '#netMonthlySalary';
+    this.submitButton = 'button:has-text("Submit")';
   }
 
-  // ✅ reusable human typing
-  async typeField(locator, value, delay = 120) {
-    await this.page.type(locator, value.toString(), { delay });
-    await this.page.waitForTimeout(300);
-  }
-
-  async verifyOnPage() {
-    await expect(this.page.getByText(/Add Your Detail/i)).toBeVisible();
+  async waitForPage() {
+    await this.page.waitForSelector(this.panInput, { state: 'visible' });
+    await maximizeScreen(this.page);
+    await expect(this.page.getByText('Add Your Detail')).toBeVisible();
+    await waitBetweenScreens(this.page);
   }
 
   async fillPanDetails({ pan, employmentType, income }) {
-    // PAN → only fill if empty
-    const panValue = await this.page.inputValue(this.panInput);
-    if (!panValue || panValue.trim() === '') {
-      await this.typeField(this.panInput, pan);
+    const panField = this.page.locator(this.panInput);
+
+    if (!(await panField.isEnabled())) {
+      console.log('ℹ️ PAN details already prefilled → skipping inputs.');
+      return;
     }
 
-    // Employment Type → only select if default/empty
-    const empText = await this.page.locator(this.employmentDropdown).textContent();
-    if (!empText || !empText.includes(employmentType)) {
-      await this.page.click(this.employmentDropdown);
-      await this.page.getByRole('option', { name: employmentType }).click();
-      await this.page.waitForTimeout(300);
-    }
+    await typeHuman(this.page, this.panInput, pan);
 
-    // Income → only fill if empty
-    const incomeValue = await this.page.inputValue(this.incomeItr);
-    if (!incomeValue || incomeValue.trim() === '') {
-      await this.typeField(this.incomeItr, income);
-    }
+    await this.page.click(this.employmentTypeDropdown);
+    await this.page.getByRole('option', { name: employmentType }).click();
+
+    await typeHuman(this.page, this.incomeInput, income);
   }
 
   async submit() {
-    await this.submitBtn.waitFor({ state: 'visible', timeout: 20000 });
-    await this.page.waitForTimeout(1000); // backend validation wait
-    await expect(this.submitBtn).toBeEnabled({ timeout: 20000 });
-    await this.submitBtn.click();
+    await this.page.waitForSelector(this.submitButton, { state: 'visible' });
+    await expect(this.page.locator(this.submitButton)).toBeEnabled();
+    await this.page.click(this.submitButton);
+    await waitBetweenScreens(this.page);
   }
 }
 

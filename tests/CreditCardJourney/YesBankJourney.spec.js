@@ -2,31 +2,36 @@ const { test, expect } = require('@playwright/test');
 const { BasicDetails } = require('../../pages/CreditCardJourney/BasicDetails.page');
 const { PanDetails } = require('../../pages/CreditCardJourney/PanDetails.page');
 const { RecommendationPage } = require('../../pages/CreditCardJourney/Recommendation.page');
-const constants = require('../../utils/constants');
+const { YesBankPersonalInfoPage } = require('../../pages/CreditCardJourney/YesBankPersonalInfo.page');
+const { takeScreenshot } = require('../../utils/helpers');
 
-test.describe('Credit Card Journey — YES Bank', () => {
-  test('✅ Full Positive Flow including Existing Application handling', async ({ page }) => {
+test.describe('Credit Card Journey — YES Bank Full Flow', () => {
+  test('✅ End-to-End till Personal Info Save & Next', async ({ page }) => {
     const basic = new BasicDetails(page);
-    const pan = new PanDetails(page);
-    const reco = new RecommendationPage(page);
-
-    // Step 1: Basic Details
     await basic.goto();
-    await basic.fillDetails(constants.testData.valid);
+    await basic.fillDetails({ phone: '9820675766', name: 'Saswat Chaturvedi', pincode: '400055' });
     await basic.acceptTerms();
     await basic.submit();
+    await takeScreenshot(page, 'basic-details-submitted');
 
-    // Step 2: PAN Details
-    await pan.verifyOnPage();
-    await pan.fillPanDetails(constants.testData.panDetails);
+    const pan = new PanDetails(page);
+    await pan.waitForPage();
+    await pan.fillPanDetails({ pan: 'BVXPN1059K', employmentType: 'Salaried', income: '1500000' });
     await pan.submit();
+    await takeScreenshot(page, 'pan-details-submitted');
 
-    // Step 3: Current Application OR Recommendation
+    const reco = new RecommendationPage(page);
+    await reco.waitForPage();
     await reco.selectYesAceCard();
+    await takeScreenshot(page, 'recommendation-yes-ace-selected');
 
-    // ✅ Verify landing in Yes Bank journey
-    await expect(page).toHaveURL(/yes-bank/i);
+    const personalInfo = new YesBankPersonalInfoPage(page);
+    await personalInfo.waitForPage();
+    await personalInfo.giveConsent();
+    await personalInfo.savePreferences();
+    await personalInfo.submitPersonalInfo();
+    await takeScreenshot(page, 'personal-info-submitted');
 
-    await page.waitForTimeout(5000);
+    await expect(page).not.toHaveURL(/personal-info/);
   });
 });
