@@ -16,7 +16,7 @@ test.describe('Credit Card Journey — YES Bank Full Flow', () => {
 
     const pan = new PanDetails(page);
     await pan.waitForPage();
-    await pan.fillPanDetails({ pan: 'BVXPN1059K', employmentType: 'Salaried', income: '1500000' });
+    await pan.fillPanDetails({ pan: 'BVXPN1059K', employmentType: 'Salaried', income: '100000' });
     await pan.submit();
     await takeScreenshot(page, 'pan-details-submitted');
 
