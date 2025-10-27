@@ -10,8 +10,8 @@ module.exports = defineConfig({
     launchOptions: {
       args: ['--start-maximized'],
     },
-    screenshot: 'only-on-failure',   // keep auto screenshots if test fails
-    video: 'retain-on-failure',      // save video if test fails
+    screenshot: 'off',   // keep auto screenshots if test fails
+    video: 'off',      // save video if test fails
   },
   reporter: [
     ['html', { outputFolder: 'reports', open: 'never' }],

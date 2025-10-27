@@ -2,11 +2,11 @@ const { expect } = require('@playwright/test');
 const { maximizeScreen, waitBetweenScreens } = require('../../utils/helpers');
 
 class YesBankPersonalInfoPage {
-  constructor(page) {
-    this.page = page;
-    this.consentCheckbox = '#v-0-0-13';
-    this.savePreferencesButton = 'button:has-text("Save Preferences")';
-    this.saveAndNextButton = 'button:has-text("Save & Next")';
+    constructor(page) {
+      this.page = page;
+      this.consentCheckbox = 'button:has-text("I Accept all the T&C and Key fact statement for YES Bank credit card application. Read More")';
+      this.savePreferencesButton = 'button:has-text("Save Preferences")';
+      this.saveAndNextButton = 'button:has-text("Save & Next")';
   }
 
   async waitForPage() {
